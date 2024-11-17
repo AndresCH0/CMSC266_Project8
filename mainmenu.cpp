@@ -164,8 +164,11 @@ void addBook(){
     // testBits(fileHandler);
 
     // check if the file opened correctly
+    // if file doesn't exist then create it
     if(fileHandler.fail()){
         cout << "error could not open file";
+        fileHandler.open("inventory.dat", ios::out);
+        fileHandler.close();
         return;
     }
     
