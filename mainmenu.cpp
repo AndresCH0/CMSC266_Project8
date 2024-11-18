@@ -1,8 +1,3 @@
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <cmath>
-#include <cstdlib>
 #include "mainmenu.h"
 
 
@@ -152,85 +147,87 @@ void addBook(){
     bool bookAdded = false;
 
     // Variable to hold the posistion of the empty read position
-    long filePointerPosition;
+    long filePointerPosition = 0;
 
     // BookData object used to hold the read values from the file
     BookData holderData = {};
 
     // fstream object 
-    fstream fileHandler("inventory.dat", ios::in | ios::out | ios::binary);
+    fstream fileHandler("inventory.dat", ios::in | ios::out | ios::binary | ios::app);
     
     // Test fileHandler bits
     // testBits(fileHandler);
 
     // check if the file opened correctly
     if(fileHandler.fail()){
-        cout << "error could not open file";
-        return;
+        cout << "ERROR: File failed to open, creating new file.\n";
+        // Create and close new file
+        fstream newFile("inventory.dat", ios::out | ios::binary);
+        newFile.close();
     }
     
-    // read the first chunk of memory associated with
-    // a BookData object
-    // fileHandler.read(reinterpret_cast<char*>(&holderData), sizeof(BookData));
+    fstream fileHandler("inventory.dat", ios::in | ios::out | ios::binary | ios::app);
 
     // Indicate user selection
     cout << "You selected Add Book.\n";
 
-
-    do{
+    // reads file until it reaches the end then
+    while (fileHandler.read(reinterpret_cast<char*>(&holderData), sizeof(BookData))){
         //fileHandler.clear();
-        
-        
-        //fileHandler.clear();
-        filePointerPosition = fileHandler.tellg();
+        // fileHandler.read(reinterpret_cast<char*>(&holderData), sizeof(BookData));
+        // filePointerPosition++;
 
         // Test fileHandler bits
         // testBits(fileHandler);
 
-        // Debugger to check where the read and write pointers are at
-        cout << endl << fileHandler.tellg() << endl;
-        cout << fileHandler.tellp() << endl;
+    }
+    // Debugger to check where the read and write pointers are at
+    cout << endl << fileHandler.tellg() << endl;
+    cout << fileHandler.tellp() << endl;
+    fileHandler.clear();
+
+    // Find the next empty section to write to
+    if (holderData.bookTitle[0] == '\0'){
+        cout << "Book Title: ";
+        cin.ignore(1, '\n');
+        cin.getline(holderData.bookTitle,51);
+        strUpper(holderData.bookTitle);
+        cout << "ISBN Number: ";
+        cin.getline(holderData.isbn,14);
+        strUpper(holderData.isbn);
+        cout << "Author's Name: ";
+        cin.getline(holderData.author,31);
+        strUpper(holderData.author);
+        cout << "Publisher's Name: ";
+        cin.getline(holderData.publisher,31);
+        strUpper(holderData.publisher);
+        cout << "The date the book was added to the inventory: ";
+        cin.getline(holderData.dateAdded, 11);
+        cout << "The quantity of the book being added: ";
+        cin >> *holderData.qtyOnHand;
+        cout << "The wholesale price of the book: ";
+        cin >> *holderData.wholesale;
+        cout << "The retail price of the book: ";
+        cin >> *holderData.retail;
+
+        
+        // Test fileHandler bits
+        // testBits(fileHandler);
+
+        //Debug: check the read and write position of the file
+        // cout << "Read Position (.tellg()) " << fileHandler.tellg() << endl;
+        // cout << "Write Position (.tellp()) " << fileHandler.tellp() << endl;
+        filePointerPosition *= sizeof(BookData);
         fileHandler.clear();
+        // fileHandler.seekp(filePointerPosition, ios::beg);
+        fileHandler.write(reinterpret_cast<char*>(&holderData), sizeof(BookData));
+        fileHandler.flush();
 
-        // Find the next empty section to write to
-        if (holderData.bookTitle[0] == '\0'){
-            cout << "Book Title: ";
-            cin.ignore(1, '\n');
-            cin.getline(holderData.bookTitle,51);
-            strUpper(holderData.bookTitle);
-            cout << "ISBN Number: ";
-            cin.getline(holderData.isbn,14);
-            strUpper(holderData.isbn);
-            cout << "Author's Name: ";
-            cin.getline(holderData.author,31);
-            strUpper(holderData.author);
-            cout << "Publisher's Name: ";
-            cin.getline(holderData.publisher,31);
-            strUpper(holderData.publisher);
-            cout << "The date the book was added to the inventory: ";
-            cin.getline(holderData.dateAdded, 11);
-            cout << "The quantity of the book being added: ";
-            cin >> *holderData.qtyOnHand;
-            cout << "The wholesale price of the book: ";
-            cin >> *holderData.wholesale;
-            cout << "The retail price of the book: ";
-            cin >> *holderData.retail;
-            fileHandler.seekp(filePointerPosition, ios::beg);
-            
-            // Test fileHandler bits
-            // testBits(fileHandler);
-
-            //Debug: check the read and write position of the file
-            // cout << "Read Position (.tellg()) " << fileHandler.tellg() << endl;
-            // cout << "Write Position (.tellp()) " << fileHandler.tellp() << endl;
-            fileHandler.write(reinterpret_cast<char*>(&holderData), sizeof(BookData));
-
-            // testBits(fileHandler);
-            fileHandler.flush();
-            bookAdded = true;
-            break;
-        }
-    }while (fileHandler.read(reinterpret_cast<char*>(&holderData), sizeof(BookData)));
+        // testBits(fileHandler);
+        bookAdded = true;
+    }
+    
+    // If no more space was empty
     if(!bookAdded){
         cout << "There is no more space to add this book\n";
     }
@@ -241,6 +238,7 @@ void addBook(){
     cout << endl;
     return;
 }
+
 
 void editBook(){
     // Variables need for element indexing 
@@ -854,7 +852,7 @@ int invMenu(){
         // if(userSelection > 5 || userSelection < 1){
         //     cout << setw(55) << "Please enter a number in the range 1 - 5\n\n";
         // }
-        while(userSelection > 5 || userSelection < 1){
+        while(userSelection < 5 || userSelection > 1){
             // cout << setw(55) << "Please enter a number in the range 1 - 5\n\n";
 
             break;
@@ -881,9 +879,11 @@ int invMenu(){
                 break;
             }
             case 5:{
-                cout << setw(36) << "You have selected item 5\n";
+                cout << setw(36) << "\n";
                 break;
             }
+            default:
+                cout << "Error";
         }
     }
     return 0;
